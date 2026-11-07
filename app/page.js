@@ -42,6 +42,14 @@ const FAQ_ITEMS = [
     q: 'Can I export my wall?',
     a: 'Yes — the Export wall as JSON button downloads your testimonials as a JSON file you can back up or reuse elsewhere.',
   },
+  {
+    q: 'How do I collect testimonials from my customers?',
+    a: 'Share your free collection form at /collect. Your customer fills it in (name, role, rating, testimonial) and it generates a JSON snippet they send to you. Paste that JSON into the Import JSON box on the wall builder and it is added to your wall. Nothing is stored on a server — the form has no backend.',
+  },
+  {
+    q: 'How does Import JSON work?',
+    a: 'Paste one testimonial object (or a list of them) in JSON — each with a name, a quote, and optionally a role and a star rating from 1 to 5 — and click "Add to wall". Invalid JSON or entries missing a name or quote are rejected with an error message, and nothing is added.',
+  },
 ];
 
 function stars(n) {
@@ -97,6 +105,8 @@ export default function Home() {
   const [theme, setTheme] = useState(THEMES[0]);
   const [copied, setCopied] = useState(false);
   const [isSample, setIsSample] = useState(true);
+  const [importText, setImportText] = useState('');
+  const [importError, setImportError] = useState('');
 
   useEffect(() => {
     try {
@@ -176,6 +186,47 @@ export default function Home() {
     }
   }
 
+  // Import JSON: paste one testimonial object (or a list of them) generated
+  // by the /collect form — or exported from another wall — and append the
+  // valid entries to the wall. Nothing is uploaded; validation is local.
+  function importJson() {
+    setImportError('');
+    let parsed;
+    try {
+      parsed = JSON.parse(importText);
+    } catch {
+      setImportError('That is not valid JSON. Copy the snippet exactly as the collection form generated it and try again.');
+      return;
+    }
+    const list = Array.isArray(parsed) ? parsed : [parsed];
+    const valid = [];
+    for (const t of list) {
+      if (!t || typeof t !== 'object') continue;
+      const name = typeof t.name === 'string' ? t.name.trim() : '';
+      const quote = typeof t.quote === 'string' ? t.quote.trim() : '';
+      if (!name || !quote) continue;
+      const starsNum = Number(t.stars);
+      valid.push({
+        name: name.slice(0, 80),
+        role: typeof t.role === 'string' && t.role.trim() ? t.role.trim().slice(0, 100) : 'Customer',
+        quote: quote.slice(0, 500),
+        stars: starsNum >= 1 && starsNum <= 5 ? Math.round(starsNum) : 5,
+      });
+    }
+    if (valid.length === 0) {
+      setImportError('No valid testimonials found. Each one needs at least a name and a quote — for example: {"name": "Jane Doe", "role": "Founder, Acme", "quote": "Great work!", "stars": 5}.');
+      return;
+    }
+    setItems([...items, ...valid]);
+    setIsSample(false);
+    setImportText('');
+    setImportError(
+      valid.length === 1
+        ? 'Added 1 testimonial to your wall.'
+        : `Added ${valid.length} testimonials to your wall.`
+    );
+  }
+
   const faqJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -193,6 +244,8 @@ export default function Home() {
       <p style={styles.tag}>
         Free testimonial wall builder. Paste your own testimonials, preview the
         wall live, copy one embed snippet onto your site. No sign-up, no backend.
+        Collecting quotes from customers?{' '}
+        <a href="/collect" style={styles.link}>Share your free collection form →</a>
       </p>
 
       <div style={styles.grid}>
@@ -286,6 +339,27 @@ export default function Home() {
         </p>
       </div>
 
+      <div style={styles.panel}>
+        <div style={styles.label}>Import JSON — add testimonials from the collection form</div>
+        <textarea
+          style={{ ...styles.input, minHeight: 90, resize: 'vertical' }}
+          value={importText}
+          onChange={(e) => setImportText(e.target.value)}
+          placeholder='Paste testimonial JSON here — e.g. {"name": "Jane Doe", "role": "Founder, Acme", "quote": "Great work!", "stars": 5}'
+        />
+        <button onClick={importJson} style={styles.button} disabled={!importText.trim()}>
+          Add to wall
+        </button>
+        {importError && <p style={{ ...styles.note, color: importError.startsWith('Added') ? '#15803d' : '#dc2626' }}>{importError}</p>}
+        <p style={styles.note}>
+          Your customers generate this JSON on the{' '}
+          <a href="/collect" style={styles.link}>collection form (/collect)</a> and
+          send it to you. Paste one testimonial, or a list of them. Entries need
+          at least a name and a quote; anything invalid is skipped with an error
+          message and nothing is added.
+        </p>
+      </div>
+
       <section style={styles.faqSection}>
         <h2 style={styles.faqH2}>Frequently asked questions</h2>
         {FAQ_ITEMS.map((i) => (
@@ -297,9 +371,9 @@ export default function Home() {
       </section>
 
       <footer style={styles.footer}>
-        Wallnote v0.1 — free wall builder. Hosted collection forms, auto-updating
-        embeds and video testimonials coming later. Demo data is fictional and
-        labelled SAMPLE.
+        Wallnote v0.2 — free wall builder + testimonial collection forms.
+        Hosted collection, auto-updating embeds and video testimonials coming
+        later. Demo data is fictional and labelled SAMPLE.
       </footer>
     </main>
   );
@@ -326,6 +400,7 @@ const styles = {
   sampleBanner: { fontSize: 13, fontWeight: 700, color: '#92400e', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: 8, padding: '10px 12px', margin: 0 },
   sampleTag: { fontSize: 11, fontWeight: 700, color: '#92400e', background: '#fef3c7', borderRadius: 4, padding: '2px 6px', alignSelf: 'flex-start', marginTop: 6 },
   remove: { background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 12, padding: 0, alignSelf: 'flex-start', marginTop: 8 },
+  link: { color: '#2563eb' },
   code: { fontSize: 12, background: '#f3f4f6', padding: 12, borderRadius: 6, whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: 320, overflow: 'auto', margin: 0 },
   faqSection: { marginTop: 40 },
   faqH2: { fontSize: 22, margin: '0 0 16px' },
