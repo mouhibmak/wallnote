@@ -3,7 +3,7 @@ import './globals.css';
 export const metadata = {
   title: 'Wallnote — Free Testimonial Wall Builder',
   description:
-    'Paste your customer testimonials, preview a beautiful wall of love, and copy a free embed snippet for your site. No sign-up, no backend, free forever.',
+    'Build a free testimonial wall: add customer quotes, pick a theme, and copy one embed snippet for your site. No sign-up, no backend.',
 };
 
 export default function RootLayout({ children }) {

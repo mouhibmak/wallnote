@@ -6,6 +6,7 @@ const THEMES = [
   { name: 'Light', bg: '#ffffff', card: '#f9fafb', text: '#111827', muted: '#6b7280', accent: '#f59e0b', border: '#e5e7eb' },
   { name: 'Dark', bg: '#0f172a', card: '#1e293b', text: '#f1f5f9', muted: '#94a3b8', accent: '#fbbf24', border: '#334155' },
   { name: 'Warm', bg: '#fffbeb', card: '#ffffff', text: '#451a03', muted: '#92400e', accent: '#ea580c', border: '#fde68a' },
+  { name: 'Ocean', bg: '#f0f9ff', card: '#ffffff', text: '#0c4a6e', muted: '#0369a1', accent: '#0284c7', border: '#bae6fd' },
 ];
 
 // Obviously fictional people. Labelled SAMPLE everywhere they appear —
@@ -17,6 +18,31 @@ const SAMPLE = [
 ];
 
 const STORAGE_KEY = 'wallnote-v01-testimonials';
+
+// FAQ — rendered visibly below and as JSON-LD FAQPage schema. Demo data
+// stays labelled SAMPLE; nothing here claims real customers.
+const FAQ_ITEMS = [
+  {
+    q: 'Is Wallnote really free?',
+    a: 'Yes. Adding testimonials, previewing the wall, all four themes, the embed snippet and the JSON export are free. No sign-up and no backend.',
+  },
+  {
+    q: 'Where are my testimonials stored?',
+    a: 'Only in your own browser (localStorage). Nothing is uploaded anywhere. Use the Export as JSON button to keep a backup, or the embed snippet to put the wall on your site.',
+  },
+  {
+    q: 'How do I put the wall on my website?',
+    a: 'Copy the embed snippet from the panel below and paste it where the wall should appear on your site. It is a static snapshot: after you edit the wall here, re-paste the snippet to update your site.',
+  },
+  {
+    q: 'Are the demo testimonials real?',
+    a: 'No. The three demo cards are fictional people, labelled SAMPLE everywhere they appear. Delete them and add quotes from your own real customers, with their permission.',
+  },
+  {
+    q: 'Can I export my wall?',
+    a: 'Yes — the Export wall as JSON button downloads your testimonials as a JSON file you can back up or reuse elsewhere.',
+  },
+];
 
 function stars(n) {
   return '★'.repeat(n) + '☆'.repeat(5 - n);
@@ -134,8 +160,35 @@ export default function Home() {
     }
   }
 
+  function exportJson() {
+    try {
+      const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'wallnote-testimonials.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      // Download failed: the wall is still visible and copyable above.
+    }
+  }
+
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQ_ITEMS.map((i) => ({
+      '@type': 'Question',
+      name: i.q,
+      acceptedAnswer: { '@type': 'Answer', text: i.a },
+    })),
+  };
+
   return (
     <main style={styles.main}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <h1 style={styles.h1}>Wallnote</h1>
       <p style={styles.tag}>
         Free testimonial wall builder. Paste your own testimonials, preview the
@@ -222,6 +275,9 @@ export default function Home() {
         <button onClick={copySnippet} style={styles.button}>
           {copied ? 'Copied!' : 'Copy embed snippet'}
         </button>
+        <button onClick={exportJson} style={styles.button}>
+          Export wall as JSON
+        </button>
         <p style={styles.note}>
           Static snapshot: the snippet carries your testimonials inside it, so it
           works with no server and no tracking. Edit the wall here and re-paste
@@ -229,6 +285,16 @@ export default function Home() {
           Wallnote&rdquo; link keeps the free tier free.
         </p>
       </div>
+
+      <section style={styles.faqSection}>
+        <h2 style={styles.faqH2}>Frequently asked questions</h2>
+        {FAQ_ITEMS.map((i) => (
+          <div key={i.q} style={{ marginBottom: 16 }}>
+            <h3 style={styles.faqH3}>{i.q}</h3>
+            <p style={styles.faqP}>{i.a}</p>
+          </div>
+        ))}
+      </section>
 
       <footer style={styles.footer}>
         Wallnote v0.1 — free wall builder. Hosted collection forms, auto-updating
@@ -261,5 +327,9 @@ const styles = {
   sampleTag: { fontSize: 11, fontWeight: 700, color: '#92400e', background: '#fef3c7', borderRadius: 4, padding: '2px 6px', alignSelf: 'flex-start', marginTop: 6 },
   remove: { background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 12, padding: 0, alignSelf: 'flex-start', marginTop: 8 },
   code: { fontSize: 12, background: '#f3f4f6', padding: 12, borderRadius: 6, whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: 320, overflow: 'auto', margin: 0 },
+  faqSection: { marginTop: 40 },
+  faqH2: { fontSize: 22, margin: '0 0 16px' },
+  faqH3: { fontSize: 16, margin: '0 0 4px' },
+  faqP: { fontSize: 15, lineHeight: 1.6, color: '#374151', margin: 0 },
   footer: { marginTop: 40, fontSize: 13, color: '#9ca3af' },
 };
