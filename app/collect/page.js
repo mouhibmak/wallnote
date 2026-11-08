@@ -20,6 +20,10 @@ const COLLECT_FAQ = [
     q: 'Can I edit my testimonial after generating the JSON?',
     a: 'Yes. Change any field above and submit again — the JSON snippet updates to match. The person adding it to the wall can also edit it there before publishing.',
   },
+  {
+    q: 'Do I need an account to share my testimonial?',
+    a: 'No. The form is free and needs no account or email. Your name, role and testimonial are only used to build the JSON snippet in your browser.',
+  },
 ];
 
 export default function Collect() {

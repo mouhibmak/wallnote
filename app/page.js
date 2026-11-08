@@ -7,6 +7,7 @@ const THEMES = [
   { name: 'Dark', bg: '#0f172a', card: '#1e293b', text: '#f1f5f9', muted: '#94a3b8', accent: '#fbbf24', border: '#334155' },
   { name: 'Warm', bg: '#fffbeb', card: '#ffffff', text: '#451a03', muted: '#92400e', accent: '#ea580c', border: '#fde68a' },
   { name: 'Ocean', bg: '#f0f9ff', card: '#ffffff', text: '#0c4a6e', muted: '#0369a1', accent: '#0284c7', border: '#bae6fd' },
+  { name: 'Forest', bg: '#052e16', card: '#14532d', text: '#f0fdf4', muted: '#86efac', accent: '#4ade80', border: '#166534' },
 ];
 
 // Obviously fictional people. Labelled SAMPLE everywhere they appear —
@@ -24,7 +25,7 @@ const STORAGE_KEY = 'wallnote-v01-testimonials';
 const FAQ_ITEMS = [
   {
     q: 'Is Wallnote really free?',
-    a: 'Yes. Adding testimonials, previewing the wall, all four themes, the embed snippet and the JSON export are free. No sign-up and no backend.',
+    a: 'Yes. Adding testimonials, previewing the wall, all five themes, the embed snippet and the JSON export are free. No sign-up and no backend.',
   },
   {
     q: 'Where are my testimonials stored?',
@@ -49,6 +50,14 @@ const FAQ_ITEMS = [
   {
     q: 'How does Import JSON work?',
     a: 'Paste one testimonial object (or a list of them) in JSON — each with a name, a quote, and optionally a role and a star rating from 1 to 5 — and click "Add to wall". Invalid JSON or entries missing a name or quote are rejected with an error message, and nothing is added.',
+  },
+  {
+    q: 'How do I ask a customer for a testimonial?',
+    a: 'Send them the link to the /collect page, by email or message. They fill in the form (name, role, rating, testimonial) and it generates a JSON snippet they send back to you. Paste it into the Import JSON box above and it is added to your wall.',
+  },
+  {
+    q: 'Can I collect testimonials from more than one customer?',
+    a: 'Yes — share the /collect link with as many customers as you like. Each person generates their own JSON snippet; paste each one into the Import JSON box and they are all added to your wall. Nothing is stored on a server at any point.',
   },
 ];
 
@@ -371,7 +380,7 @@ export default function Home() {
       </section>
 
       <footer style={styles.footer}>
-        Wallnote v0.2 — free wall builder + testimonial collection forms.
+        Wallnote v0.3 — free wall builder + testimonial collection forms.
         Hosted collection, auto-updating embeds and video testimonials coming
         later. Demo data is fictional and labelled SAMPLE.
       </footer>
